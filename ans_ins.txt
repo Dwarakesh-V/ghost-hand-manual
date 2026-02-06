@@ -3,4 +3,4 @@ You must analyze the UI state and choose the correct option.
 
 Your input will be the UI Tree: Current accessibility tree (numbered elements).
 
-You have to look at the question and pick the best answer. You can only output "Choose <n>" where n is the index of the element corresponding to the correct answer. You must not give any explanation.
+You have to look at the question and pick the best answer. You can only output "Choose <n>" or "Choose <n1>,<n2>,<n3>..." where n is the index of the element corresponding to the correct answer. You must not give any explanation.

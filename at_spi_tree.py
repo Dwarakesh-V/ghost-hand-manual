@@ -3,6 +3,7 @@
 
 # Custom
 import pyatspi
+from para_maker import at_pm
 
 # Built-in
 import subprocess
@@ -57,13 +58,13 @@ def is_relevant_element(accessible):
     try:
         state = accessible.getState()
         
-        # 1. Basic Visibility
+        # Basic Visibility
         if not (state.contains(pyatspi.STATE_VISIBLE) and state.contains(pyatspi.STATE_SHOWING)):
             return False
         if state.contains(pyatspi.STATE_DEFUNCT):
             return False
 
-        # 2. Check Roles
+        # Check Roles
         role = accessible.getRoleName().lower()
         
         # Note: 'paragraph', 'heading', 'section' are key for your quiz questions
@@ -77,8 +78,6 @@ def is_relevant_element(accessible):
                           state.contains(pyatspi.STATE_FOCUSABLE)) and
                           state.contains(pyatspi.STATE_SENSITIVE))
 
-        # 3. Check for Content (Name OR Text Interface)
-        # This is where the previous version failed for <p> tags
         content = get_text_content(accessible)
         has_content = len(content) > 0
 
@@ -126,9 +125,7 @@ def get_element_info(accessible, depth):
             'role': role,
             'description': full_description,
             'depth': depth,
-            'location': ((extents.x*2)+10, (extents.y*2)+10),
-            'width': extents.width,
-            'height': extents.height
+            'location': ((extents.x*2), (extents.y*2))
         }
     except Exception as e:
         return None
@@ -163,4 +160,4 @@ def traverse_tree(accessible, depth=0, max_depth=50):
 
 if __name__ == "__main__":
     time.sleep(8)
-    print(traverse_tree(find_application_by_pid(get_focused_window_pid())))
+    print(at_pm(traverse_tree(find_application_by_pid(get_focused_window_pid()))))

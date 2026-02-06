@@ -59,7 +59,7 @@ def get_box_coords():
             right = max(x1, x2)
             bottom = max(y1, y2)
             
-            if right - left > 5 and bottom - top > 5:
+            if right - left > 5 and bottom - top > 5: # Minimum threshold
                 selection_coords = (int(left), int(top), int(right), int(bottom))
                 
                 # Cleanup and close
