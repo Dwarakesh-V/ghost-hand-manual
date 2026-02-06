@@ -6,24 +6,18 @@ import pyatspi
 
 # Built-in
 import subprocess
+import time
 
-def focus_window_by_pid(pid: int) -> None:
-    search = subprocess.run(
-        ["xdotool", "search", "--pid", str(pid)],
-        capture_output=True,
-        text=True
-    )
-
-    if search.returncode != 0 or not search.stdout.strip():
-        return
-
-    for wid in search.stdout.split():
-        subprocess.run(
-            ["xdotool", "windowactivate", wid],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True
-        )
+def find_application_by_pid(pid):
+    desktop = pyatspi.Registry.getDesktop(0)
+    for i in range(desktop.childCount):
+        try:
+            app = desktop.getChildAtIndex(i)
+            if app.get_process_id() == pid:
+                return app
+        except:
+            continue
+    return None
     
 def get_focused_window_pid():
     try:
@@ -166,3 +160,7 @@ def traverse_tree(accessible, depth=0, max_depth=50):
         pass
     
     return elements
+
+if __name__ == "__main__":
+    time.sleep(8)
+    print(traverse_tree(find_application_by_pid(get_focused_window_pid())))

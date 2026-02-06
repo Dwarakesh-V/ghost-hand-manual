@@ -1,7 +1,6 @@
 import tkinter as tk
 import sys
 import time
-import os
 
 def get_box_coords():
     """
@@ -74,7 +73,7 @@ def get_box_coords():
 
     def on_escape_press(event):
         root.destroy()
-        sys.exit("Screenshot cancelled.")
+        sys.exit("Selection cancelled.")
 
     canvas.bind('<Button-1>', on_mouse_down)
     canvas.bind('<B1-Motion>', on_mouse_drag)
