@@ -16,10 +16,11 @@ def get_box_coords():
     # Transparency settings
     root.wait_visibility(root)
     root.configure(background=transparent_bg)
-    root.wm_attributes("-alpha", 0.2) 
+    root.wm_attributes("-alpha", 0.05) 
 
     # Create canvas with the transparent background color
-    canvas = tk.Canvas(root, cursor="cross", bg=transparent_bg, highlightthickness=0)
+    # canvas = tk.Canvas(root, cursor="cross", bg=transparent_bg, highlightthickness=0)
+    canvas = tk.Canvas(root, bg=transparent_bg, highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
     # State variables

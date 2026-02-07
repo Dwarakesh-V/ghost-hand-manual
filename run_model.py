@@ -3,6 +3,7 @@ from at_spi_tree import *
 from box_coords import get_box_coords
 from gemini_api_gen import generate_text
 from para_maker import at_pm
+from parse_choice import parse_choice
 
 # Built-in
 import time
@@ -31,9 +32,15 @@ def run_model(mode):
             ins = f.read()
 
     prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
-    print(prompt)
-    return generate_text(prompt)
+    # print(prompt) # Debug log
+    return (cur_app_selected,generate_text(prompt))
+
+    # Debug returns
+    # return (cur_app_selected,"choose 4")
+    # return (cur_app_selected,"choose 6,18,30,33")
 
 if __name__ == "__main__":
-    time.sleep(3)
-    print(run_model("answer"))
+    time.sleep(1)
+    final = run_model("answer")
+    parse_choice(final[0],final[1])
+    time.sleep(10)
