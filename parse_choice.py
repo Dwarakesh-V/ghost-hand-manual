@@ -54,8 +54,11 @@ def parse_choice(elements,choice):
     else:
         choices = inss[1].split(",")
         print(f"Choices: {choices}")
+        original_mouse = Controller()
+        original_loc = original_mouse.position
         for idx in choices:
             index = int(idx.strip())
             loc = elements[index]["location"]
             print(elements[index],elements[index]["location"])
             click_at(loc) # Buffer to focus inside the element instead of exactly at the topleft corner
+        original_mouse.position = original_loc
