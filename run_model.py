@@ -1,14 +1,52 @@
 # Custom
 from at_spi_tree import *
 from box_coords import get_box_coords
-from gemini_api_gen import generate_text
+from gemini_api_gen import generate_gemini_text
 from para_maker import at_pm
 from parse_choice import parse_choice
 
+# Download
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+
 # Built-in
 import time
+import json
+from pathlib import Path
 
-def run_model(mode):
+BASE_DIR = Path(__file__).parent
+
+def generate_llama_text(model,tokenizer,messages):
+    """Generate a response from the model"""
+    # Apply chat template
+    prompt = tokenizer.apply_chat_template(
+        messages, 
+        tokenize=False, 
+        add_generation_prompt=True
+    )
+    
+    # Tokenize
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    
+    # Generate
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=128,
+            do_sample=False,
+            # temperature=0.4,
+            pad_token_id=tokenizer.eos_token_id
+        )
+    
+    # Decode only the new tokens
+    response = tokenizer.decode(
+        outputs[0][inputs['input_ids'].shape[1]:], 
+        skip_special_tokens=True
+    )
+    
+    return response
+
+def run_model(model_type,mode):
     screen_loc = get_box_coords()
     print(screen_loc)
     time.sleep(1) # To ensure focus returns to the actual app instead of tkinter app
@@ -31,16 +69,54 @@ def run_model(mode):
         with open("expl_ins.txt") as f:
             ins = f.read()
 
-    prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
-    # print(prompt) # Debug log
-    return (cur_app_selected,generate_text(prompt))
+    with open("instructions.json") as f:
+        if model_type == "api":
+            prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
+            return (cur_app_selected,generate_gemini_text(prompt))
+        
+        elif model_type == "local":
+            # Load model on demand
+            model_path = f"{BASE_DIR}/Llama-3.1-8B-Instruct"
 
-    # Debug returns
-    # return (cur_app_selected,"choose 4")
-    # return (cur_app_selected,"choose 6,18,30,33")
+            # Define the quantization configuration
+            quant_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16
+            ) # Quantize to 4 bit int
+
+            model = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                quantization_config=quant_config, # uncomment to quantize larger models
+                device_map="auto",
+            )
+            tokenizer = AutoTokenizer.from_pretrained(model_path)
+            messages = [
+                {
+                    "role": "system",
+                    "content": ins
+                },
+                {
+                    "role": "user",
+                    "content": f"Tree:\n{cur_app_data}"
+                }
+            ]
+            print(torch.cuda.get_device_name(0))
+            print(next(model.parameters()).dtype)
+
+            return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
+        
+        else:
+            return (cur_app_selected,"choose 4") # Debug
 
 if __name__ == "__main__":
+    with open("instructions.json") as f:
+        ins_sys = json.load(f)
+    model_type = ins_sys["model_type"]
+    mode = ins_sys["mode"]
+    
     time.sleep(1)
-    final = run_model("answer")
+    final = run_model(model_type,mode)
     parse_choice(final[0],final[1])
-    time.sleep(10)
+    time.sleep(3)

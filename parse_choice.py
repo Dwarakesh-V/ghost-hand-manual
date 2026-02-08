@@ -1,3 +1,6 @@
+from Xlib import display, X
+from Xlib.ext import xtest
+import time
 import tkinter as tk
 
 def draw_phantom_box(coords):
@@ -12,26 +15,17 @@ def draw_phantom_box(coords):
     arrow.overrideredirect(True)
     arrow.wm_attributes("-topmost", True)
 
-    # 1. Geometry: Pointing straight up
-    # We want the TIP of the triangle (w/2, 0) to be at target_x, target_y
     w, h = 20, 20
     win_x = int(target_x)
     win_y = int(target_y)+10
     arrow.geometry(f"{w}x{h}+{win_x}+{win_y}")
 
-    # 2. The Color Fix
-    # Since systemTransparent failed, we use 'black' and then 
-    # make the whole window semi-transparent using alpha.
     bg_color = 'white'
     arrow.configure(bg=bg_color)
 
-    # 3. Create Canvas
-    # highlightthickness=0 is vital on Linux to remove the gray border
     canvas = tk.Canvas(arrow, width=w, height=h, bg=bg_color, highlightthickness=0)
     canvas.pack()
 
-    # 4. Draw STRAIGHT triangle pointing UP
-    # [Tip-X, Tip-Y, Bottom-Right-X, Bottom-Right-Y, Bottom-Left-X, Bottom-Left-Y]
     points = [
         w / 2, 4,   # Tip (Top Center)
         w-4, h-4,       # Bottom Right
@@ -43,14 +37,38 @@ def draw_phantom_box(coords):
     arrow.attributes('-alpha', 0.2) 
     arrow.update()
 
+def click_at(coords):
+    x, y = coords
+
+    d = display.Display()
+    root = d.screen().root
+
+    pointer = root.query_pointer()
+    orig_x = pointer.root_x
+    orig_y = pointer.root_y
+
+    root.warp_pointer(x, y)
+    d.sync()
+
+    xtest.fake_input(d, X.ButtonPress, 1)
+    xtest.fake_input(d, X.ButtonRelease, 1)
+    d.sync()
+
+    root.warp_pointer(orig_x, orig_y)
+    d.sync()
+
 def parse_choice(elements,choice):
+    print(choice)
+    time.sleep(0.5)
     inss = choice.split(maxsplit=1)
     if not inss[0].lower() == "choose":
         print(f"Model response cannot be parsed. {choice}")
         return None
     else:
         choices = inss[1].split(",")
+        print(f"Choices: {choices}")
         for idx in choices:
             index = int(idx.strip())
             loc = elements[index]["location"]
-            draw_phantom_box(loc)
+            print(elements[index],elements[index]["location"])
+            click_at(loc)

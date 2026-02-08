@@ -1,7 +1,7 @@
 import os
 from google import genai
 
-def generate_text(prompt):
+def generate_gemini_text(prompt):
     # Retrieve the API key from environment variables
     api_key = os.environ.get("GEMINI_API_KEY")
     
@@ -17,10 +17,12 @@ def generate_text(prompt):
             model="gemini-2.5-flash",
             contents=prompt
         )
+
+        print(response.text)
         return response.text
     
     except Exception as e:
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    generate_text()
+    generate_gemini_text()
