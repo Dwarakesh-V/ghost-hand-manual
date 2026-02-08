@@ -1,7 +1,7 @@
-from Xlib import display, X
-from Xlib.ext import xtest
 import time
 import tkinter as tk
+
+from pynput.mouse import Controller, Button
 
 def draw_phantom_box(coords):
     target_x, target_y = int(coords[0]), int(coords[1])
@@ -37,25 +37,12 @@ def draw_phantom_box(coords):
     arrow.attributes('-alpha', 0.2) 
     arrow.update()
 
+
 def click_at(coords):
-    x, y = coords
-
-    d = display.Display()
-    root = d.screen().root
-
-    pointer = root.query_pointer()
-    orig_x = pointer.root_x
-    orig_y = pointer.root_y
-
-    root.warp_pointer(x, y)
-    d.sync()
-
-    xtest.fake_input(d, X.ButtonPress, 1)
-    xtest.fake_input(d, X.ButtonRelease, 1)
-    d.sync()
-
-    root.warp_pointer(orig_x, orig_y)
-    d.sync()
+    mouse = Controller()
+    mouse.position = coords
+    time.sleep(0.01)
+    mouse.click(Button.left, 1)
 
 def parse_choice(elements,choice):
     print(choice)
@@ -71,4 +58,4 @@ def parse_choice(elements,choice):
             index = int(idx.strip())
             loc = elements[index]["location"]
             print(elements[index],elements[index]["location"])
-            click_at((loc[0]+2,loc[1]+2)) # Buffer to focus inside the element instead of exactly at the topleft corner
+            click_at(loc) # Buffer to focus inside the element instead of exactly at the topleft corner

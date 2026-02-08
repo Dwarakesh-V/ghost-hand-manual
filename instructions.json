@@ -1,4 +1,4 @@
 {
     "mode": "answer",
-    "model_type": "dd"
+    "model_type": "local"
 }

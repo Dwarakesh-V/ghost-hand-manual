@@ -6,6 +6,7 @@ You will receive:
 
 Your task:
 Select ALL UI elements that correspond to correct answers.
+Process the tree sequentially from index 0 to the final index. Do not skip indices.
 
 Question rules:
 - Evaluate every question in the UI tree.

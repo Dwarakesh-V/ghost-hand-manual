@@ -15,6 +15,7 @@ BASE_DIR = Path(__file__).parent
 def generate_llama_text(model,tokenizer,messages):
     """Generate a response from the model"""
     # Apply chat template
+    import torch # On demand import
     prompt = tokenizer.apply_chat_template(
         messages, 
         tokenize=False, 
@@ -25,7 +26,7 @@ def generate_llama_text(model,tokenizer,messages):
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     
     # Generate
-    with torch.no_grad(): # type: ignore # Ignore this warning as pytorch is imported on demand
+    with torch.no_grad():
         outputs = model.generate(
             **inputs,
             max_new_tokens=128,
@@ -102,8 +103,7 @@ def run_model(model_type,mode):
                     "content": f"Tree:\n{cur_app_data}"
                 }
             ]
-            print(torch.cuda.get_device_name(0))
-            print(next(model.parameters()).dtype)
+            print(cur_app_data)
 
             return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
         
