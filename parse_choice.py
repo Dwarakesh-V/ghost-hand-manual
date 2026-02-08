@@ -37,6 +37,50 @@ def draw_phantom_box(coords):
     arrow.attributes('-alpha', 0.2) 
     arrow.update()
 
+def draw_phantom_text(text):
+    if not tk._default_root:
+        root = tk.Tk()
+        root.withdraw()
+
+    panel = tk.Toplevel()
+    # panel.overrideredirect(True)
+    panel.wm_attributes("-topmost", True)
+
+    bg_color = "white"
+    panel.configure(bg=bg_color)
+
+    # Screen dimensions
+    screen_w = panel.winfo_screenwidth()
+    screen_h = panel.winfo_screenheight()
+
+    margin_x = 30
+    margin_y = 200
+    panel_width = 1000
+
+    label = tk.Label(
+        panel,
+        text=text,
+        fg="black",
+        bg=bg_color,
+        font=("Liberation sans", 12),
+        justify="left",
+        wraplength=panel_width - 20
+    )
+    label.pack(padx=10, pady=10)
+
+    panel.update_idletasks()
+    panel_height = panel.winfo_height()
+
+    # Right-side placement (Copilot-style)
+    x = screen_w - panel_width - margin_x
+    y = margin_y
+
+    panel.geometry(f"{panel_width}x{panel_height}+{x}+{y}")
+
+    panel.wait_visibility(panel)
+    panel.update()
+
+    return panel
 
 def click_at(coords):
     mouse = Controller()
@@ -48,10 +92,7 @@ def parse_choice(elements,choice):
     print(choice)
     time.sleep(0.5)
     inss = choice.split(maxsplit=1)
-    if not inss[0].lower() == "choose":
-        print(f"Model response cannot be parsed. {choice}")
-        return None
-    else:
+    if inss[0].lower() == "choose":
         choices = inss[1].split(",")
         print(f"Choices: {choices}")
         original_mouse = Controller()
@@ -62,3 +103,5 @@ def parse_choice(elements,choice):
             print(elements[index],elements[index]["location"])
             click_at(loc) # Buffer to focus inside the element instead of exactly at the topleft corner
         original_mouse.position = original_loc
+    else:
+        draw_phantom_text(choice)

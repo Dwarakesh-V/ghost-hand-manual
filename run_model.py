@@ -29,7 +29,7 @@ def generate_llama_text(model,tokenizer,messages):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=128,
+            max_new_tokens=1024,
             do_sample=False,
             # temperature=0.4,
             pad_token_id=tokenizer.eos_token_id
@@ -118,4 +118,4 @@ if __name__ == "__main__":
     time.sleep(1)
     final = run_model()
     parse_choice(final[0],final[1])
-    time.sleep(3)
+    time.sleep(30)
