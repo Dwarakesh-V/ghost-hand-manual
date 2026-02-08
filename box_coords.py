@@ -1,6 +1,10 @@
 import tkinter as tk
 import sys
 import time
+import json
+
+from pathlib import Path
+BASE_DIR = Path(__file__).parent
 
 def get_box_coords():
     """
@@ -16,7 +20,14 @@ def get_box_coords():
     # Transparency settings
     root.wait_visibility(root)
     root.configure(background=transparent_bg)
-    root.wm_attributes("-alpha", 0.05) 
+    with open(f"{BASE_DIR}/instructions.json") as f:
+        ins = json.load(f)
+        stealth = ins["stealth"]
+        # Hard caps
+        stealth = max(0,stealth)
+        stealth = min(1,stealth)
+        stealth = 0.55-(0.05 + stealth*0.45)
+    root.wm_attributes("-alpha", stealth) # Between 0.05 and 0.5
 
     # Create canvas with the transparent background color
     # canvas = tk.Canvas(root, cursor="cross", bg=transparent_bg, highlightthickness=0)
@@ -87,6 +98,7 @@ def get_box_coords():
 
 
 if __name__ == "__main__":
+    time.sleep(1)
     try:
         coords = get_box_coords()
         if coords:

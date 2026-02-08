@@ -1,4 +1,5 @@
 {
     "mode": "answer",
-    "model_type": "local"
+    "model_type": "local",
+    "stealth": 1
 }
