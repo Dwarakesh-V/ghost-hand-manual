@@ -71,4 +71,4 @@ def parse_choice(elements,choice):
             index = int(idx.strip())
             loc = elements[index]["location"]
             print(elements[index],elements[index]["location"])
-            click_at(loc)
+            click_at((loc[0]+2,loc[1]+2)) # Buffer to focus inside the element instead of exactly at the topleft corner

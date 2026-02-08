@@ -5,10 +5,6 @@ from gemini_api_gen import generate_gemini_text
 from para_maker import at_pm
 from parse_choice import parse_choice
 
-# Download
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-
 # Built-in
 import time
 import json
@@ -29,7 +25,7 @@ def generate_llama_text(model,tokenizer,messages):
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
     
     # Generate
-    with torch.no_grad():
+    with torch.no_grad(): # type: ignore # Ignore this warning as pytorch is imported on demand
         outputs = model.generate(
             **inputs,
             max_new_tokens=128,
@@ -75,6 +71,10 @@ def run_model(model_type,mode):
             return (cur_app_selected,generate_gemini_text(prompt))
         
         elif model_type == "local":
+            # Download
+            # Import on demand
+            import torch
+            from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
             # Load model on demand
             model_path = f"{BASE_DIR}/Llama-3.1-8B-Instruct"
 
@@ -108,7 +108,7 @@ def run_model(model_type,mode):
             return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
         
         else:
-            return (cur_app_selected,"choose 4") # Debug
+            return (cur_app_selected,"choose 6,18,30,33") # Debug
 
 if __name__ == "__main__":
     with open("instructions.json") as f:
