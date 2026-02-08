@@ -43,7 +43,7 @@ def generate_llama_text(model,tokenizer,messages):
     
     return response
 
-def run_model(model_type,mode):
+def run_model():
     screen_loc = get_box_coords()
     print(screen_loc)
     time.sleep(1) # To ensure focus returns to the actual app instead of tkinter app
@@ -59,64 +59,63 @@ def run_model(model_type,mode):
 
     cur_app_data = at_pm(cur_app_selected)
 
+    with open(f"{BASE_DIR}/instructions.json") as f:
+        ins = json.load(f)
+        mode = ins["mode"]
+        model_type = ins["model_type"]
+
     if mode == "answer":
-        with open("ans_ins.txt") as f:
+        with open(f"{BASE_DIR}/ans_ins.txt") as f:
             ins = f.read()
     else:
-        with open("expl_ins.txt") as f:
+        with open(f"{BASE_DIR}/expl_ins.txt") as f:
             ins = f.read()
-
-    with open("instructions.json") as f:
-        if model_type == "api":
-            prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
-            return (cur_app_selected,generate_gemini_text(prompt))
-        
-        elif model_type == "local":
-            # Download
-            # Import on demand
-            import torch
-            from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-            # Load model on demand
-            model_path = f"{BASE_DIR}/Llama-3.1-8B-Instruct"
-
-            # Define the quantization configuration
-            quant_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.bfloat16
-            ) # Quantize to 4 bit int
-
-            model = AutoModelForCausalLM.from_pretrained(
-                model_path,
-                quantization_config=quant_config, # uncomment to quantize larger models
-                device_map="auto",
-            )
-            tokenizer = AutoTokenizer.from_pretrained(model_path)
-            messages = [
-                {
-                    "role": "system",
-                    "content": ins
-                },
-                {
-                    "role": "user",
-                    "content": f"Tree:\n{cur_app_data}"
-                }
-            ]
-            print(cur_app_data)
-
-            return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
-        
-        else:
-            return (cur_app_selected,"choose 6,18,30,33") # Debug
-
-if __name__ == "__main__":
-    with open("instructions.json") as f:
-        ins_sys = json.load(f)
-    model_type = ins_sys["model_type"]
-    mode = ins_sys["mode"]
     
+    if model_type == "api":
+        prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
+        return (cur_app_selected,generate_gemini_text(prompt))
+    
+    elif model_type == "local":
+        # Download
+        # Import on demand
+        import torch
+        from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+        # Load model on demand
+        model_path = f"{BASE_DIR}/Llama-3.1-8B-Instruct"
+
+        # Define the quantization configuration
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16
+        ) # Quantize to 4 bit int
+
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            quantization_config=quant_config, # uncomment to quantize larger models
+            device_map="auto",
+        )
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        messages = [
+            {
+                "role": "system",
+                "content": ins
+            },
+            {
+                "role": "user",
+                "content": f"Tree:\n{cur_app_data}"
+            }
+        ]
+        print(cur_app_data)
+
+        return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
+    
+    else:
+        return (cur_app_selected,"choose 6,18,30,33") # Debug
+
+if __name__ == "__main__":    
     time.sleep(1)
-    final = run_model(model_type,mode)
+    final = run_model()
     parse_choice(final[0],final[1])
     time.sleep(3)
