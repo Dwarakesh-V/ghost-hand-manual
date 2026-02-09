@@ -1,0 +1,1 @@
+When using web mode, ensure you have a Chromium browser (Chromium, Chrome, Brave) instance running with remote debugging enabled, and also ensure that the tabs for ChatGPT, Gemini, and Claude are opened. Paste the first prompt from web_answer for answers and web_expl for explanations, and then run this program.

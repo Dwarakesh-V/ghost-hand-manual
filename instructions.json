@@ -1,5 +1,5 @@
 {
     "mode": "answer",
-    "model_type": "local",
+    "model_type": "web",
     "stealth": 1
 }

@@ -5,3 +5,4 @@ __pycache__
 logs.txt
 Llama*
 web_aut.py
+launch.sh

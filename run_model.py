@@ -4,11 +4,13 @@ from box_coords import get_box_coords
 from gemini_api_gen import generate_gemini_text
 from para_maker import at_pm
 from parse_choice import parse_choice
+from web_aut import rcv_web_int
 
 # Built-in
 import time
 import json
 from pathlib import Path
+import asyncio
 
 BASE_DIR = Path(__file__).parent
 
@@ -111,6 +113,10 @@ def run_model():
 
         return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
     
+    elif model_type == "web":
+        model_response = asyncio.run(rcv_web_int("chatgpt",cur_app_data))
+        return (cur_app_selected,model_response)
+        
     else:
         return (cur_app_selected,"choose 6,18,30,33") # Debug
 

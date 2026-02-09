@@ -26,8 +26,8 @@ def get_box_coords():
         # Hard caps
         stealth = max(0,stealth)
         stealth = min(1,stealth)
-        stealth = 0.55-(0.05 + stealth*0.45)
-    root.wm_attributes("-alpha", stealth) # Between 0.05 and 0.5
+        stealth = 0.52-(0.05 + stealth*0.45)
+    root.wm_attributes("-alpha", stealth) # Between 0.02 and 0.5
 
     # Create canvas with the transparent background color
     # canvas = tk.Canvas(root, cursor="cross", bg=transparent_bg, highlightthickness=0)
