@@ -114,6 +114,6 @@ def parse_choice(elements, choice):
         loc = elements[index]["location"]
         print(elements[index], loc)
         click_at(loc)
-        time.sleep(0.1)
+        time.sleep(0.02)
 
     original_mouse.position = original_loc
