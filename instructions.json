@@ -1,5 +1,5 @@
 {
-    "mode": "explain",
+    "mode": "answer",
     "model_type": "local",
     "stealth": 1
 }

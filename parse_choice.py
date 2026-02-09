@@ -1,5 +1,6 @@
 import time
 import tkinter as tk
+import re
 
 from pynput.mouse import Controller, Button
 
@@ -88,20 +89,31 @@ def click_at(coords):
     time.sleep(0.01)
     mouse.click(Button.left, 1)
 
-def parse_choice(elements,choice):
+def parse_choice(elements, choice):
     print(choice)
     time.sleep(0.5)
-    inss = choice.split(maxsplit=1)
-    if inss[0].lower() == "choose":
-        choices = inss[1].split(",")
-        print(f"Choices: {choices}")
-        original_mouse = Controller()
-        original_loc = original_mouse.position
-        for idx in choices:
-            index = int(idx.strip())
-            loc = elements[index]["location"]
-            print(elements[index],elements[index]["location"])
-            click_at(loc) # Buffer to focus inside the element instead of exactly at the topleft corner
-        original_mouse.position = original_loc
-    else:
+
+    # Find the ACTION line safely (last occurrence)
+    matches = re.findall(r"ACTION:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
+
+    if not matches:
         draw_phantom_text(choice)
+        return
+
+    # Use the last valid ACTION match
+    indices_str = matches[-1]
+    choices = [c.strip() for c in indices_str.split(",") if c.strip()]
+
+    print(f"Choices: {choices}")
+
+    original_mouse = Controller()
+    original_loc = original_mouse.position
+
+    for idx in choices:
+        index = int(idx)
+        loc = elements[index]["location"]
+        print(elements[index], loc)
+        click_at(loc)
+        time.sleep(0.1)
+
+    original_mouse.position = original_loc
