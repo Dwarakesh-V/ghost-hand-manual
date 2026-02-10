@@ -39,16 +39,16 @@ def draw_phantom_box(coords):
     arrow.attributes('-alpha', 0.2) 
     arrow.update()
 
-def draw_phantom_text(content, pos):
-    x, y = pos
-
+def draw_phantom_text(content):
     cmd = [
         "yad",
+        "--title=Explanation",
         "--text-info",
         "--no-buttons",
-        f"--geometry=+{x}+{y}",
-        "--width=1",
-        "--height=1"
+        "--wrap",
+        "--fontname=Liberation Sans 10",
+        "--borders=10",
+        "--geometry=350x600-20+40",
     ]
 
     subprocess.Popen(
@@ -56,7 +56,6 @@ def draw_phantom_text(content, pos):
         stdin=subprocess.PIPE,
         text=True
     ).stdin.write(content)
-
 
 def click_at(coords):
     mouse = Controller()
@@ -72,11 +71,9 @@ def parse_choice(elements, choice):
     matches = re.findall(r"ACTION:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
 
     if not matches:
-        all_choices = choice.split("\n")
-        for c in all_choices:
-            idxc,content = c.split(maxsplit=1)
-            locb = elements[idxc]["location"]
-            draw_phantom_text(content,locb)
+        choice = choice.strip()
+        draw_phantom_text(choice)
+        return
 
     # Use the last valid ACTION match
     indices_str = matches[-1]

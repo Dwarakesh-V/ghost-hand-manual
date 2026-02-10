@@ -125,4 +125,3 @@ if __name__ == "__main__":
     time.sleep(1)
     final = run_model()
     parse_choice(final[0],final[1])
-    time.sleep(30)
