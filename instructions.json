@@ -1,5 +1,6 @@
 {
     "mode": "answer",
     "model_type": "web",
-    "stealth": 1
+    "stealth": 1,
+    "web_model": "chatgpt"
 }

@@ -65,6 +65,7 @@ def run_model():
         ins = json.load(f)
         mode = ins["mode"]
         model_type = ins["model_type"]
+        web_model = ins["web_model"]
 
     if mode == "answer":
         with open(f"{BASE_DIR}/ans_ins.txt") as f:
@@ -114,7 +115,7 @@ def run_model():
         return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
     
     elif model_type == "web":
-        model_response = asyncio.run(rcv_web_int("chatgpt",cur_app_data))
+        model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
         return (cur_app_selected,model_response)
         
     else:

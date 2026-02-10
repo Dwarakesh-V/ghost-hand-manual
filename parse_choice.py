@@ -1,6 +1,7 @@
 import time
 import tkinter as tk
 import re
+import subprocess
 
 from pynput.mouse import Controller, Button
 
@@ -38,50 +39,24 @@ def draw_phantom_box(coords):
     arrow.attributes('-alpha', 0.2) 
     arrow.update()
 
-def draw_phantom_text(text):
-    if not tk._default_root:
-        root = tk.Tk()
-        root.withdraw()
+def draw_phantom_text(content, pos):
+    x, y = pos
 
-    panel = tk.Toplevel()
-    # panel.overrideredirect(True)
-    panel.wm_attributes("-topmost", True)
+    cmd = [
+        "yad",
+        "--text-info",
+        "--no-buttons",
+        f"--geometry=+{x}+{y}",
+        "--width=1",
+        "--height=1"
+    ]
 
-    bg_color = "white"
-    panel.configure(bg=bg_color)
+    subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        text=True
+    ).stdin.write(content)
 
-    # Screen dimensions
-    screen_w = panel.winfo_screenwidth()
-    screen_h = panel.winfo_screenheight()
-
-    margin_x = 30
-    margin_y = 200
-    panel_width = 1000
-
-    label = tk.Label(
-        panel,
-        text=text,
-        fg="black",
-        bg=bg_color,
-        font=("Liberation sans", 12),
-        justify="left",
-        wraplength=panel_width - 20
-    )
-    label.pack(padx=10, pady=10)
-
-    panel.update_idletasks()
-    panel_height = panel.winfo_height()
-
-    # Right-side placement (Copilot-style)
-    x = screen_w - panel_width - margin_x
-    y = margin_y
-
-    panel.geometry(f"{panel_width}x{panel_height}+{x}+{y}")
-
-    panel.wait_visibility(panel)
-    panel.update()
-
-    return panel
 
 def click_at(coords):
     mouse = Controller()
@@ -97,8 +72,11 @@ def parse_choice(elements, choice):
     matches = re.findall(r"ACTION:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
 
     if not matches:
-        draw_phantom_text(choice)
-        return
+        all_choices = choice.split("\n")
+        for c in all_choices:
+            idxc,content = c.split(maxsplit=1)
+            locb = elements[idxc]["location"]
+            draw_phantom_text(content,locb)
 
     # Use the last valid ACTION match
     indices_str = matches[-1]
