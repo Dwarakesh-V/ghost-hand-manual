@@ -11,6 +11,9 @@ import time
 import json
 from pathlib import Path
 import asyncio
+import sys
+
+from PyQt5.QtWidgets import QApplication
 
 BASE_DIR = Path(__file__).parent
 
@@ -115,8 +118,9 @@ def run_model():
         return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
     
     elif model_type == "web":
-        model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
-        return (cur_app_selected,model_response)
+        # model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
+        # return (cur_app_selected,model_response)
+        return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3")
         
     else:
         return (cur_app_selected,"choose 6,18,30,33") # Debug
@@ -124,4 +128,6 @@ def run_model():
 if __name__ == "__main__":    
     time.sleep(1)
     final = run_model()
+    app = QApplication(sys.argv)
     parse_choice(final[0],final[1])
+    app.exec_()
