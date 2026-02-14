@@ -3,6 +3,12 @@ import tkinter as tk
 import re
 import subprocess
 
+import sys
+from PIL import Image, ImageDraw, ImageFont
+from PyQt5.QtWidgets import QApplication, QLabel
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+
 from pynput.mouse import Controller, Button
 
 def draw_phantom_box(coords):
@@ -57,6 +63,57 @@ def draw_phantom_text(content):
         text=True
     ).stdin.write(content)
 
+app = QApplication.instance()
+if app is None:
+    app = QApplication(sys.argv)
+
+
+def draw_arrow(num, loc):
+    x,y = loc
+    # Load arrow image
+    img = Image.open("arrow.png").convert("RGBA")
+
+    draw = ImageDraw.Draw(img)
+
+    font = ImageFont.load_default()
+
+    text = str(num)
+
+    # center text
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+
+    iw, ih = img.size
+    pos = ((iw - tw) // 2, (ih - th) // 2)
+
+    draw.text(pos, text, fill="black", font=font)
+
+    # Save temporary image
+    temp_path = "_arrow_temp.png"
+    img.save(temp_path)
+
+    # Overlay window
+    label = QLabel()
+    pixmap = QPixmap(temp_path)
+
+    label.setPixmap(pixmap)
+    label.resize(pixmap.width(), pixmap.height())
+
+    label.setWindowFlags(
+        Qt.FramelessWindowHint |
+        Qt.WindowStaysOnTopHint |
+        Qt.Tool
+    )
+
+    label.setAttribute(Qt.WA_TranslucentBackground)
+    label.setStyleSheet("background: transparent;")
+
+    label.move(x, y)
+    label.show()
+
+    app.exec_()
+
 def click_at(coords):
     mouse = Controller()
     mouse.position = coords
@@ -71,8 +128,13 @@ def parse_choice(elements, choice):
     matches = re.findall(r"ACTION:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
 
     if not matches:
+        matches = re.findall(r"ARROWS:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
         choice = choice.strip()
-        draw_phantom_text(choice)
+        draw_phantom_text(choice[14:])
+        indices_str = matches[-1]
+        choices = [c.strip() for c in indices_str.split(",") if c.strip()]
+        for i in choices:
+            draw_arrow(i,elements[i]["location"])
         return
 
     # Use the last valid ACTION match
@@ -88,7 +150,7 @@ def parse_choice(elements, choice):
         index = int(idx)
         loc = elements[index]["location"]
         print(elements[index], loc)
-        click_at(loc)
+        draw_phantom_box(loc)
         time.sleep(0.02)
 
     original_mouse.position = original_loc
