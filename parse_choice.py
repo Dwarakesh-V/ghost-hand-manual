@@ -3,8 +3,9 @@ import re
 import sys
 
 from PIL import Image, ImageDraw, ImageFont
+from PIL.ImageQt import ImageQt
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QTextEdit, QVBoxLayout
-from PyQt5.QtGui import QPixmap, QPainter, QPolygon, QColor
+from PyQt5.QtGui import QPixmap, QPainter, QPolygon, QColor, QFont
 from PyQt5.QtCore import Qt, QPoint
 
 from pynput.mouse import Controller, Button
@@ -47,56 +48,91 @@ class PhantomText(QWidget):
     def __init__(self, content):
         super().__init__()
         self.setWindowTitle("Explanation")
-        self.setGeometry(50, 40, 350, 600)
+        self.setGeometry(1800, 100, 700, 1250)
 
         layout = QVBoxLayout()
         text = QTextEdit()
         text.setReadOnly(True)
+
+        font = QFont("Liberation Sans", 22)
+        font.setBold(True)
+        text.setFont(font)
+
         text.setText(content)
 
         layout.addWidget(text)
         self.setLayout(layout)
-
 
 def draw_phantom_text(content):
     w = PhantomText(content)
     OVERLAYS.append(w)
     w.show()
 
-
 def draw_arrow(num, loc):
     x, y = loc
 
     img = Image.open("arrow.png").convert("RGBA")
     draw = ImageDraw.Draw(img)
-    font = ImageFont.load_default()
+
+    # Bigger font
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", 36)
+    except:
+        font = ImageFont.load_default()
 
     text = str(num)
+
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
 
     iw, ih = img.size
-    pos = ((iw - tw) // 2, (ih - th) // 2)
 
-    draw.text(pos, text, fill="black", font=font)
+    padding_x = 10
+    padding_y = 10
 
-    temp_path = "_arrow_temp.png"
-    img.save(temp_path)
+    box_w = tw + padding_x * 2
+    box_h = th + padding_y * 2
+
+    bx = (iw - box_w) // 1.5
+    by = (ih - box_h)
+
+    # Rounded black background
+    draw.rounded_rectangle(
+        [bx, by, bx + box_w, by + box_h],
+        radius=999,
+        fill="black"
+    )
+
+    # White text
+    draw.text(
+        (bx + box_w // 2, by + box_h // 2),
+        text,
+        # fill="#ff6d00",
+        fill = "#ffffff",
+        font=font,
+        anchor="mm"   # center-middle anchor
+    )
+
+    qim = ImageQt(img)
+    pixmap = QPixmap.fromImage(qim)
 
     label = QLabel()
-    pixmap = QPixmap(temp_path)
-
     label.setPixmap(pixmap)
     label.resize(pixmap.width(), pixmap.height())
-    label.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+
+    label.setWindowFlags(
+        Qt.FramelessWindowHint |
+        Qt.WindowStaysOnTopHint |
+        Qt.Tool
+    )
+
     label.setAttribute(Qt.WA_TranslucentBackground)
     label.setStyleSheet("background: transparent;")
     label.move(x, y)
 
     OVERLAYS.append(label)
     label.show()
-
 
 def click_at(coords):
     mouse = Controller()
@@ -109,13 +145,14 @@ def parse_choice(elements, choice):
     matches = re.findall(r"ACTION:\s*choose\s+([0-9,\s]+)", choice, re.IGNORECASE)
 
     if not matches:
-        draw_phantom_text(choice)
+        draw_phantom_text(choice[14:])
 
         matches = re.findall(r"ARROWS:\s*([0-9,\s]+)", choice, re.IGNORECASE)
         if matches:
             indices_str = matches[-1]
             choices = [c.strip() for c in indices_str.split(",") if c.strip()]
             for i in choices:
+                print("DEBUG:",elements[int(i)])
                 draw_arrow(int(i), elements[int(i)]["location"])
         return
 

@@ -120,7 +120,7 @@ def run_model():
     elif model_type == "web":
         # model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
         # return (cur_app_selected,model_response)
-        return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3")
+        return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3,4,5,6")
         
     else:
         return (cur_app_selected,"choose 6,18,30,33") # Debug
