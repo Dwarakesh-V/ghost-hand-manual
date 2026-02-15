@@ -12,10 +12,38 @@ import json
 from pathlib import Path
 import asyncio
 import sys
+import tkinter as tk
 
 from PyQt5.QtWidgets import QApplication
 
 BASE_DIR = Path(__file__).parent
+
+
+def get_uinput():
+    result = {"text": None}
+
+    def submit(event=None):
+        result["text"] = text_box.get("1.0", "end-1c")
+        root.destroy()
+
+    root = tk.Tk()
+    root.title("What are you looking for?")
+    root.geometry("600x300")
+
+    font_settings = ("Liberation Sans", 22)
+
+    tk.Label(root, text="Enter text:", font=font_settings).pack(pady=10)
+
+    text_box = tk.Text(root, height=4, font=font_settings, wrap="word")
+    text_box.pack(padx=20, pady=10, fill="both", expand=True)
+    text_box.focus()
+
+    tk.Button(root, text="OK", command=submit, font=font_settings).pack(pady=10)
+
+    root.bind("<Return>", submit)
+
+    root.mainloop()
+    return result["text"]
 
 def generate_llama_text(model,tokenizer,messages):
     """Generate a response from the model"""
@@ -76,9 +104,14 @@ def run_model():
     else:
         with open(f"{BASE_DIR}/expl_ins.txt") as f:
             ins = f.read()
+        user_query = get_uinput()
     
     if model_type == "api":
         prompt = f"System: {ins}\n\nTree:\n{cur_app_data}"
+        try:
+            prompt+=f"\n{user_query}"
+        except:
+            pass
         return (cur_app_selected,generate_gemini_text(prompt))
     
     elif model_type == "local":
@@ -113,14 +146,24 @@ def run_model():
                 "content": f"Tree:\n{cur_app_data}"
             }
         ]
-        print(cur_app_data)
+        try:
+            messages.append({
+                "role": "user",
+                "content": user_query
+            })
+        except:
+            pass
 
         return (cur_app_selected,generate_llama_text(model,tokenizer,messages))
     
     elif model_type == "web":
-        # model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
-        # return (cur_app_selected,model_response)
-        return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3,4,5,6")
+        try:
+            cur_app_data+=f"\n{user_query}"
+        except:
+            pass
+        model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
+        return (cur_app_selected,model_response)
+        # return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3,4,5,6")
         
     else:
         return (cur_app_selected,"choose 6,18,30,33") # Debug
