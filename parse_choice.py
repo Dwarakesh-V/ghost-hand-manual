@@ -1,6 +1,7 @@
 import time
 import re
 import sys
+from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ImageQt import ImageQt
@@ -10,13 +11,13 @@ from PyQt5.QtCore import Qt, QPoint
 
 from pynput.mouse import Controller, Button
 
+BASE_DIR = Path(__file__).parent
 
 app = QApplication.instance()
 if app is None:
     app = QApplication(sys.argv)
 
 OVERLAYS = []
-
 
 class PhantomBox(QWidget):
     def __init__(self, x, y):
@@ -71,7 +72,7 @@ def draw_phantom_text(content):
 def draw_arrow(num, loc):
     x, y = loc
 
-    img = Image.open("arrow.png").convert("RGBA")
+    img = Image.open(f"{BASE_DIR}/arrow.png").convert("RGBA")
     draw = ImageDraw.Draw(img)
 
     # Bigger font

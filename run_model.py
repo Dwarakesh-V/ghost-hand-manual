@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import QApplication
 
 BASE_DIR = Path(__file__).parent
 
-
 def get_uinput():
     result = {"text": None}
 
@@ -161,15 +160,15 @@ def run_model():
             cur_app_data+=f"\n{user_query}"
         except:
             pass
-        model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
-        return (cur_app_selected,model_response)
-        # return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3,4,5,6")
+        # model_response = asyncio.run(rcv_web_int(web_model,cur_app_data))
+        # return (cur_app_selected,model_response)
+        return (cur_app_selected,"txt\nCopy code\nDo something\nARROWS: 1,2,3,4,5,6")
         
     else:
         return (cur_app_selected,"choose 6,18,30,33") # Debug
 
 if __name__ == "__main__":    
-    time.sleep(1)
+    time.sleep(9)
     final = run_model()
     app = QApplication(sys.argv)
     parse_choice(final[0],final[1])
