@@ -1,106 +1,91 @@
-import tkinter as tk
 import sys
-import time
+from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtGui import QPainter, QColor, QPen
+from PyQt6.QtCore import Qt, QRect
 import json
-
 from pathlib import Path
 BASE_DIR = Path(__file__).parent
 
-def get_box_coords():
-    """
-    Creates a full-screen transparent overlay allowing the user to draw 
-    a selection box. Captures immediately on mouse release.
-    """
-    root = tk.Tk()
-    root.attributes('-fullscreen', True)
-    root.attributes('-topmost', True)
-    
-    transparent_bg = 'black' # Black overlay color
+class SelectionOverlay(QWidget):
+    def __init__(self, opacity=0.05):
+        super().__init__()
 
-    # Transparency settings
-    root.wait_visibility(root)
-    root.configure(background=transparent_bg)
+        self.start = None
+        self.end = None
+        self.selection = None
+        self.opacity = opacity
+
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint |
+            Qt.WindowType.WindowStaysOnTopHint |
+            Qt.WindowType.Tool
+        )
+
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WidgetAttribute.WA_X11DoNotAcceptFocus)
+
+        self.showFullScreen()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor(0, 0, 0, int(255 * self.opacity)))
+
+        if self.start and self.end:
+            pen = QPen(QColor(255, 255, 255, int(self.opacity*255)))
+            pen.setWidth(2)
+            painter.setPen(pen)
+            rect = QRect(self.start, self.end)
+            painter.drawRect(rect)
+
+    def mousePressEvent(self, event):
+        self.start = event.pos()
+        self.end = event.pos()
+        self.update()
+
+    def mouseMoveEvent(self, event):
+        self.end = event.pos()
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        rect = QRect(self.start, event.pos()).normalized()
+        x, y, w, h = rect.getRect()
+        self.selection = (x, y, x + w, y + h)
+        QApplication.quit()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.selection = None
+            QApplication.quit()
+
+
+def get_box_coords():
     with open(f"{BASE_DIR}/instructions.json") as f:
         ins = json.load(f)
         stealth = ins["stealth"]
-        # Hard caps
-        stealth = max(0,stealth)
-        stealth = min(1,stealth)
-        stealth = 0.52-(0.05 + stealth*0.45)
-    root.wm_attributes("-alpha", stealth) # Between 0.02 and 0.5
+        stealth = max(0, min(0.95, stealth))
+        opacity=1-stealth
+    app = QApplication.instance()
+    owns_app = False
 
-    # Create canvas with the transparent background color
-    canvas = tk.Canvas(root, bg=transparent_bg, highlightthickness=0)
-    canvas.pack(fill="both", expand=True)
+    if app is None:
+        app = QApplication(sys.argv)
+        owns_app = True
 
-    # State variables
-    start_x = None
-    start_y = None
-    rect_id = None
-    selection_coords = None
+    overlay = SelectionOverlay(opacity=opacity)
+    overlay.show()
 
-    def on_mouse_down(event):
-        nonlocal start_x, start_y, rect_id
-        start_x = event.x
-        start_y = event.y
-        
-        if rect_id:
-            canvas.delete(rect_id)
-        
-        # Draw the box in White
-        rect_id = canvas.create_rectangle(
-            start_x, start_y, start_x, start_y, 
-            outline='white', 
-            width=2
-        )
+    app.exec()
 
-    def on_mouse_drag(event):
-        nonlocal rect_id
-        if rect_id:
-            canvas.coords(rect_id, start_x, start_y, event.x, event.y)
+    result = overlay.selection
 
-    def on_mouse_release(event):
-        nonlocal selection_coords
-        
-        if rect_id:
-            coords = canvas.coords(rect_id)
-            x1, y1, x2, y2 = coords
-            left = min(x1, x2)
-            top = min(y1, y2)
-            right = max(x1, x2)
-            bottom = max(y1, y2)
-            
-            if right - left > 5 and bottom - top > 5: # Minimum threshold
-                selection_coords = (int(left), int(top), int(right), int(bottom))
-                
-                # Cleanup and close
-                root.withdraw()
-                root.update_idletasks()
-                time.sleep(0.1)
-                root.quit()
-                root.destroy()
-            else:
-                pass
+    if owns_app:
+        app.quit()
 
-    def on_escape_press(event):
-        root.destroy()
-        sys.exit("Selection cancelled.")
-
-    canvas.bind('<Button-1>', on_mouse_down)
-    canvas.bind('<B1-Motion>', on_mouse_drag)
-    canvas.bind('<ButtonRelease-1>', on_mouse_release)
-    root.bind('<Escape>', on_escape_press)
-
-    root.mainloop()
-    
-    return selection_coords
-
+    return result
 
 if __name__ == "__main__":
-    time.sleep(1)
-    try:
-        coords = get_box_coords()
-        if coords:
-            print(f"Captured Area: {coords}")
-    except Exception as e:
-        print(f"Error: {e}")
+    app = QApplication(sys.argv)
+    overlay = SelectionOverlay(opacity=0.1)
+    overlay.show()
+    sys.exit(app.exec())
