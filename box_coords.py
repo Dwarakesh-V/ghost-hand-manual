@@ -30,8 +30,7 @@ def get_box_coords():
     root.wm_attributes("-alpha", stealth) # Between 0.02 and 0.5
 
     # Create canvas with the transparent background color
-    canvas = tk.Canvas(root, cursor="cross", bg=transparent_bg, highlightthickness=0)
-    # canvas = tk.Canvas(root, bg=transparent_bg, highlightthickness=0)
+    canvas = tk.Canvas(root, bg=transparent_bg, highlightthickness=0)
     canvas.pack(fill="both", expand=True)
 
     # State variables

@@ -25,7 +25,7 @@ class PhantomBox(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setGeometry(x, y + 10, 20, 20)
-        self.setWindowOpacity(0.2)
+        self.setWindowOpacity(0.1)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -167,6 +167,7 @@ def parse_choice(elements, choice):
         index = int(idx)
         loc = elements[index]["location"]
         draw_phantom_box(loc)
+        click_at(loc)
         time.sleep(0.02)
 
     original_mouse.position = original_loc

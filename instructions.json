@@ -1,6 +1,6 @@
 {
-    "mode": "explain",
+    "mode": "answer",
     "model_type": "web",
-    "stealth": 0.1,
+    "stealth": 1,
     "web_model": "chatgpt"
 }
