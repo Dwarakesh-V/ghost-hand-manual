@@ -164,7 +164,7 @@ def run_model():
         return (cur_app_selected,model_response)
         
     else:
-        return (cur_app_selected,"choose 6,18,30,33") # Debug
+        return (cur_app_selected,"ACTION: choose 6,18,30,33") # Debug
 
 if __name__ == "__main__":    
     time.sleep(1)

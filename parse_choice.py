@@ -25,7 +25,11 @@ class PhantomBox(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setGeometry(x, y + 10, 20, 20)
-        self.setWindowOpacity(0.1)
+        self.setWindowOpacity(1)
+        self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.setAttribute(Qt.WA_X11DoNotAcceptFocus)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
 
     def paintEvent(self, event):
         painter = QPainter(self)
